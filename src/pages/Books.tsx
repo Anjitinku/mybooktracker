@@ -87,6 +87,36 @@ const Books = () => {
     }
   };
 
+  // Async function to delete a book from Supabase database
+  const handleDeleteBook = async (bookId: string) => {
+    try {
+      // Delete the book from the database
+      const { error } = await supabase
+        .from('books')
+        .delete()
+        .eq('id', bookId);
+
+      // Throw error if delete failed
+      if (error) throw error;
+
+      // Remove book from local state for immediate UI update
+      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+
+      // Show success toast
+      toast({
+        title: 'Book deleted',
+        description: 'The book has been removed from your library.',
+      });
+    } catch (error) {
+      // Show error toast if delete failed
+      toast({
+        title: 'Error',
+        description: 'Failed to delete book. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Filter books based on search query and status filter
   const filteredBooks = books.filter((book) => {
     // Check if book title or author matches search query (case-insensitive)
@@ -175,6 +205,7 @@ const Books = () => {
                 isFavorite={book.is_favorite}
                 readingProgress={book.reading_progress ?? 0} // Default to 0 if null
                 index={index} // For staggered animation delay
+                onDelete={handleDeleteBook} // Pass delete handler
               />
             ))}
           </div>
